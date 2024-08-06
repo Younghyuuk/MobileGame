@@ -1,0 +1,59 @@
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import javafx.animation.AnimationTimer;
+
+public class Main extends Application {
+    private GameEngine engine;
+    private GameTimer timer;
+
+    @Override
+    public void start(Stage primaryStage) {
+        // Initialize the canvas and graphics context
+        Canvas canvas = new Canvas(1024, 768);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        // Initialize the asset manager and game engine
+        AssetManager assetManager = new AssetManager();
+        engine = new GameEngine(gc, assetManager);
+
+        // Assuming the AssetManager has a method to load assets asynchronously
+        assetManager.loadAssets(() -> {
+            // Once assets are loaded, initialize the engine (if needed) and start the game timer
+            engine.init();  // Assuming 'init' method sets up game components
+
+            // Game Timer to handle game loop
+            timer = new GameTimer() {
+                @Override
+                public void handle(long now) {
+                    engine.update();
+                    engine.draw();
+                }
+            };
+            timer.start();
+        });
+
+        // Setup the primary stage with canvas
+        StackPane root = new StackPane();
+        root.getChildren().add(canvas);
+        Scene scene = new Scene(root, 1024, 768);
+        primaryStage.setTitle("Game Project Title Goes Here");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    private class GameTimer extends AnimationTimer {
+        @Override
+        public void handle(long now) {
+            engine.update();
+            engine.draw();
+        }
+    }
+}
